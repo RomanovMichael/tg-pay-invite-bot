@@ -5,13 +5,6 @@ const TelegramBot = require('node-telegram-bot-api');
 const { v4: uuidv4 } = require('uuid');
 const express = require('express');
 
-// Конфигурация
-// const TELEGRAM_BOT_TOKEN = '7597119999:AAEg3uDHxQt1mURsuwMoLKdkAvsDlFupzaM'; // Токен бота
-// const SHOP_ID = '1052670'; // ID магазина в ЮKassa
-// const API_KEY = 'test_LhbvK9XuzFJ2yVtiWtZ2SEwO1mQlV5kUGjxsVS2q4W0'; // Секретный ключ API ЮKassa
-// const CHANNEL_ID = '-1002558603487'; // Username или числовой ID канала
-// const returnUrl = 'https://t.me/+mQND8LqAcHk1NGYy'
-
 const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN; // Токен бота
 const SHOP_ID = process.env.SHOP_ID; // ID магазина в ЮKassa
 const API_KEY = process.env.API_KEY; // Секретный ключ API ЮKassa
