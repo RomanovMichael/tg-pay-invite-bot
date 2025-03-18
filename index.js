@@ -11,7 +11,6 @@ const API_KEY = process.env.API_KEY; // Секретный ключ API ЮKassa
 const CHANNEL_ID = process.env.CHANNEL_ID; // Username или числовой ID канала
 const returnUrl = process.env.RETURN_URL; // URL для редиректа после оплаты
 
-
 // Инициализация бота
 const bot = new TelegramBot(TELEGRAM_BOT_TOKEN, { polling: true });
 
