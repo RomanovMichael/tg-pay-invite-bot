@@ -205,49 +205,63 @@ app.get('/', (req, res) => {
 });
 
 // Webhook для получения уведомлений от ЮKassa
+
 app.post('/webhook', async (req, res) => {
     const event = req.body;
 
-    // Логируем входящее событие
-    console.log("Получено уведомление от ЮKassa:", event);
+    // Логируем полное событие от ЮKassa
+    console.log("📩 Получено уведомление от ЮKassa:", JSON.stringify(event, null, 2));
 
     try {
-        // Проверяем тип события
         if (event.event === "payment.succeeded") {
-            const chatId = event.object.metadata.chat_id;
+            const chatId = event.object?.metadata?.chat_id;
 
-            // Добавляем пользователя в канал
+            console.log("🆔 Извлечённый chat_id из webhook:", chatId);
+
+            if (!chatId) {
+                console.error("❌ chat_id отсутствует в metadata!");
+                return res.sendStatus(400);
+            }
+
+            // Пробуем получить информацию о пользователе
             try {
+                const userInfo = await bot.getChat(chatId);
+                console.log("✅ Пользователь найден:", userInfo.username || userInfo.first_name || "Без имени");
+
                 // Генерируем пригласительную ссылку
                 const inviteLink = await bot.exportChatInviteLink(CHANNEL_ID);
+                console.log("🔗 Сгенерирована ссылка:", inviteLink);
 
-                // Отправляем сообщение с кнопкой
-               await bot.sendMessage(chatId, "Оплата прошла успешно! Вы можете войти в закрытый канал:", {
+                // Отправляем сообщение
+                await bot.sendMessage(chatId, "🎉 Оплата прошла успешно! Вы можете войти в закрытый канал:", {
                     reply_markup: {
                         inline_keyboard: [
                             [{ text: "Перейти в канал", url: inviteLink }]
                         ]
                     }
                 });
+
+                console.log("✅ Сообщение успешно отправлено!");
             } catch (error) {
-                console.error("Ошибка при добавлении пользователя в канал:", error);
-                await bot.sendMessage(chatId, "Произошла ошибка при добавлении вас в канал. Пожалуйста, свяжитесь с поддержкой.");
+                console.error("❌ Ошибка при работе с Telegram API:", error.message);
+                return res.status(400).send("Ошибка доступа к chat_id или Telegram API");
             }
+
         } else if (event.event === "payment.waiting_for_capture") {
-            console.log("Платеж ожидает подтверждения:", event.object.id);
+            console.log("⏳ Платёж ожидает подтверждения:", event.object.id);
         } else if (event.event === "payment.canceled") {
-            console.log("Платеж отменен:", event.object.id);
+            console.log("❌ Платёж отменён:", event.object.id);
         } else {
-            console.log("Неизвестное событие:", event.event);
+            console.log("⚠️ Неизвестное событие:", event.event);
         }
 
-        // Всегда возвращаем 200 OK
         res.sendStatus(200);
     } catch (error) {
-        console.error("Ошибка при обработке уведомления:", error.message);
-        res.sendStatus(500); // В случае ошибки сервера
+        console.error("💥 Ошибка при обработке webhook:", error.message);
+        res.sendStatus(500);
     }
 });
+
 
 // Запуск сервера
 app.listen(3000, () => {
